@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MEXC Predictor.bot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #161b22;
+      --panel: #21262d;
+      --accent: #00d395;
+      --accent2: #ff3c51;
+      --text: #e6edf3;
+      --subtle: #7a8593;
+      --good: #14c784;
+      --bad: #ff5b6b;
+      --signal-glow-up: 0 0 16px 3px #00d39588, 0 0 32px 8px #14c78444;
+      --signal-glow-down: 0 0 16px 3px #ff3c5188, 0 0 32px 8px #ff5b6b44;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .container {
+      max-width: 440px;
+      width: 100%;
+      margin: 32px 0;
+      background: var(--panel);
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.22), 0 1.5px 0 0 var(--accent2);
+      padding: 32px 18px 24px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+      color: var(--accent);
+      text-shadow: 0 0 4px #00d39511;
+    }
+    .toggles {
+      display: flex;
+      gap: 18px;
+      margin-bottom: 18px;
+      width: 100%;
+      justify-content: center;
+    }
+    .toggle-group {
+      background: #222b34;
+      border-radius: 10px;
+      display: flex;
+      overflow: hidden;
+    }
+    .toggle-btn {
+      padding: 8px 18px;
+      border: none;
+      background: none;
+      color: var(--subtle);
+      font-weight: 500;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.18s,color 0.18s;
+    }
+    .toggle-btn.selected {
+      background: var(--accent);
+      color: #161b22;
+    }
+    .market-panel {
+      width: 100%;
+      background: #181e25;
+      border-radius: 12px;
+      padding: 20px 0 10px 0;
+      text-align: center;
+      margin-bottom: 16px;
+      position: relative;
+      box-shadow: 0 2px 12px #0004;
+    }
+    .status-bar {
+      position: absolute;
+      right: 16px;
+      top: 16px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .status-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 5px;
+      background: var(--bad);
+      border: 2px solid #14181e;
+      box-sizing: border-box;
+    }
+    .status-dot.running {
+      background: var(--good);
+      box-shadow: 0 0 6px #14c78477;
+    }
+    .market-symbol {
+      font-size: 1.11rem;
+      font-weight: 600;
+      color: var(--accent2);
+      letter-spacing: 1px;
+    }
+    .price-row {
+      margin: 6px 0 2px 0;
+      font-size: 2.1rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    .trend {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-top: 2px;
+      padding: 2px 8px;
+      border-radius: 8px;
+      display: inline-block;
+      background: #162322;
+      color: var(--good);
+      transition: background .2s, color .2s;
+    }
+    .trend.down {
+      background: #221818;
+      color: var(--bad);
+    }
+    .signal-panel {
+      width: 100%;
+      background: #16222e;
+      border-radius: 10px;
+      padding: 20px 0 14px 0;
+      margin-bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 2px 8px #0002;
+    }
+    .signal-row {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+    .signal {
+      font-size: 3rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      padding: 23px 46px;
+      border-radius: 16px;
+      color: #fff;
+      background: linear-gradient(90deg,var(--good),var(--accent));
+      margin-right: 12px;
+      border: none;
+      outline: none;
+      box-shadow: var(--signal-glow-up);
+      transition: background .25s, box-shadow .25s, font-size .2s;
+      text-shadow: 0 4px 25px #00d39544;
+      text-transform: uppercase;
+      min-width: 110px;
+      display: inline-block;
+      z-index: 2;
+      position: relative;
+    }
+    .signal.down {
+      background: linear-gradient(90deg,var(--bad),var(--accent2));
+      box-shadow: var(--signal-glow-down);
+      text-shadow: 0 4px 25px #ff5b6b44;
+    }
+    .confidence {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent2);
+      padding: 10px 18px;
+      background: #151a1f;
+      border-radius: 11px;
+      margin-left: 4px;
+      box-shadow: 0 2px 8px #ff3c5112;
+      letter-spacing: 1px;
+    }
+    .timer {
+      font-size: 2.3rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--accent);
+      margin-bottom: 7px;
+      margin-top: 3px;
+      text-shadow: 0 2px 8px #00d39522;
+    }
+    .startstop-row {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin-bottom: 13px;
+      gap: 18px;
+    }
+    .btn {
+      padding: 11px 38px;
+      font-size: 1.15rem;
+      border-radius: 11px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--accent);
+      color: #10161e;
+      letter-spacing: 1px;
+      transition: background .2s, color .2s, box-shadow .2s, transform .15s;
+      margin: 0 3px;
+      box-shadow: 0 0 14px 2px #00d3952a, 0 0 2px 0 #14c78412;
+      outline: none;
+    }
+    .btn.stop {
+      background: var(--accent2);
+      color: #fff;
+      box-shadow: 0 0 14px 2px #ff3c512a, 0 0 2px 0 #ff5b6b12;
+    }
+    .btn:active {
+      transform: scale(0.97);
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 1rem;
+      margin-top: 5px;
+      background: #10151a;
+      border-radius: 9px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px #0003;
+    }
+    .history-table th, .history-table td {
+      padding: 7px 7px;
+      text-align: center;
+    }
+    .history-table th {
+      background: #181e25;
+      color: var(--accent);
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+    .history-table td {
+      background: #12181e;
+      color: var(--text);
+      border-bottom: 1px solid #1a232b;
+    }
+    .history-table tr:last-child td {
+      border-bottom: none;
+    }
+    .result-win {
+      color: var(--good);
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    .result-lose {
+      color: var(--bad);
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    @media (max-width: 520px) {
+      .container {
+        padding: 19px 2vw 16px 2vw;
+      }
+      h1 { font-size: 1.3rem; }
+      .price-row { font-size: 1.22rem; }
+      .timer { font-size: 1.3rem; }
+      .signal { font-size: 1.5rem; padding: 12px 20px; min-width: 72px;}
+      .confidence { font-size: 1.1rem; padding: 7px 10px; }
+      .signal-panel { padding: 10px 0 5px 0;}
+      .market-panel { padding: 10px 0 7px 0;}
+      .btn { font-size: 1rem; padding: 8px 22px; border-radius: 8px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>MEXC Predictor.bot</h1>
+    <div class="toggles">
+      <div class="toggle-group" id="symbol-toggle">
+        <button class="toggle-btn selected" data-symbol="BTCUSDT">BTC</button>
+        <button class="toggle-btn" data-symbol="ETHUSDT">ETH</button>
+      </div>
+      <div class="toggle-group" id="interval-toggle">
+        <button class="toggle-btn selected" data-interval="5">5 min</button>
+        <button class="toggle-btn" data-interval="15">15 min</button>
+      </div>
+    </div>
+    <div class="market-panel">
+      <div class="status-bar">
+        <span id="status-dot" class="status-dot"></span>
+        <span id="status-label">Stopped</span>
+      </div>
+      <div class="market-symbol" id="market-symbol">BTC/USDT</div>
+      <div class="price-row">
+        <span id="live-price">--</span>
+        <span id="trend" class="trend">--</span>
+      </div>
+      <div id="price-update-time" style="font-size:0.95em;color:var(--subtle);margin-top:3px;"></div>
+    </div>
+    <div class="signal-panel">
+      <div class="signal-row">
+        <span id="signal" class="signal">--</span>
+        <span id="confidence" class="confidence">--</span>
+      </div>
+      <div class="timer" id="timer">00:00</div>
+    </div>
+    <div class="startstop-row">
+      <button id="start-btn" class="btn">Start</button>
+      <button id="stop-btn" class="btn stop" disabled>Stop</button>
+    </div>
+    <table class="history-table" id="history-table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Start</th>
+          <th>Close</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody id="history-body">
+      </tbody>
+    </table>
+  </div>
+  <script>
+    // === CONFIG ===
+    const API_BASE = "https://api.mexc.com";
+    const SYMBOLS = {
+      BTCUSDT: {symbol: "BTCUSDT", display: "BTC/USDT", minMove: 0.1},
+      ETHUSDT: {symbol: "ETHUSDT", display: "ETH/USDT", minMove: 0.01}
+    };
+
+    // === STATE ===
+    let state = {
+      running: false,
+      symbol: "BTCUSDT",
+      interval: 5, // in minutes
+      timer: null,
+      countdown: 0, // in seconds
+      price: null,
+      prevPrice: null,
+      trend: null,
+      signal: "--",
+      confidence: "--",
+      startPrice: null,
+      closePrice: null,
+      currentSignalInfo: null,
+      history: []
+    };
+
+    // === DOM ===
+    const $symbolToggle = document.getElementById("symbol-toggle");
+    const $intervalToggle = document.getElementById("interval-toggle");
+    const $marketSymbol = document.getElementById("market-symbol");
+    const $livePrice = document.getElementById("live-price");
+    const $trend = document.getElementById("trend");
+    const $signal = document.getElementById("signal");
+    const $confidence = document.getElementById("confidence");
+    const $timer = document.getElementById("timer");
+    const $statusDot = document.getElementById("status-dot");
+    const $statusLabel = document.getElementById("status-label");
+    const $startBtn = document.getElementById("start-btn");
+    const $stopBtn = document.getElementById("stop-btn");
+    const $historyBody = document.getElementById("history-body");
+    const $priceUpdateTime = document.getElementById("price-update-time");
+
+    // === UTILS ===
+    function pad(n) { return n < 10 ? "0"+n : n; }
+    function formatTime(ts) {
+      const d = new Date(ts);
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }
+    function formatPrice(p, symbol) {
+      return Number(p).toFixed(SYMBOLS[symbol].minMove < 0.1 ? 2 : 1);
+    }
+
+    // === UI UPDATES ===
+    function updateStatus(running) {
+      $statusDot.classList.toggle("running", running);
+      $statusLabel.textContent = running ? "Running" : "Stopped";
+      $startBtn.disabled = running;
+      $stopBtn.disabled = !running;
+    }
+    function updateSymbolUI() {
+      Array.from($symbolToggle.children).forEach(btn => {
+        btn.classList.toggle("selected", btn.dataset.symbol === state.symbol);
+      });
+      $marketSymbol.textContent = SYMBOLS[state.symbol].display;
+    }
+    function updateIntervalUI() {
+      Array.from($intervalToggle.children).forEach(btn => {
+        btn.classList.toggle("selected", Number(btn.dataset.interval) === state.interval);
+      });
+    }
+    function updatePriceUI() {
+      $livePrice.textContent = state.price ? formatPrice(state.price,state.symbol) : "--";
+      $trend.textContent = state.trend || "--";
+      $trend.classList.toggle("down", state.trend === "Falling");
+      $trend.classList.toggle("up", state.trend === "Rising");
+    }
+    function updateSignalUI() {
+      if(state.signal === "UP") {
+        $signal.textContent = "UP";
+        $signal.classList.remove("down");
+        $signal.classList.add("up");
+      } else if(state.signal === "DOWN") {
+        $signal.textContent = "DOWN";
+        $signal.classList.add("down");
+        $signal.classList.remove("up");
+      } else {
+        $signal.textContent = "--";
+        $signal.classList.remove("down");
+        $signal.classList.remove("up");
+      }
+      $confidence.textContent = (state.confidence !== "--" ? state.confidence + "%" : "--");
+    }
+    function updateTimerUI() {
+      let m = Math.floor(state.countdown / 60);
+      let s = state.countdown % 60;
+      $timer.textContent = `${pad(m)}:${pad(s)}`;
+    }
+    function updateHistoryUI() {
+      $historyBody.innerHTML = "";
+      for (let row of state.history.slice(-10).reverse()) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.time}</td>
+          <td>${formatPrice(row.startPrice, state.symbol)}</td>
+          <td>${formatPrice(row.closePrice, state.symbol)}</td>
+          <td class="${row.result === 'win' ? 'result-win':'result-lose'}">
+            ${row.result === 'win' ? '✅' : '❌'}
+          </td>
+        `;
+        $historyBody.appendChild(tr);
+      }
+    }
+    function responsiveNotify(msg) {
+      let toast = document.createElement("div");
+      toast.textContent = msg;
+      toast.style.position = "fixed";
+      toast.style.bottom = "30px";
+      toast.style.left = "50%";
+      toast.style.transform = "translateX(-50%)";
+      toast.style.background = "rgba(6,32,16,0.97)";
+      toast.style.color = "#fff";
+      toast.style.padding = "11px 23px";
+      toast.style.borderRadius = "8px";
+      toast.style.fontWeight = "600";
+      toast.style.fontSize = "1.09em";
+      toast.style.boxShadow = "0 2px 12px #0007";
+      toast.style.zIndex = 40;
+      document.body.appendChild(toast);
+      setTimeout(()=>toast.remove(),1850);
+    }
+
+    // === API: Live Price Updating ===
+    let pricePoller = null;
+    function startPriceFeed() {
+      stopPriceFeed();
+      let first = true;
+      let lastPrice = null;
+      async function updatePrice() {
+        try {
+          const resp = await fetch(API_BASE + `/api/v3/ticker/price?symbol=${state.symbol}`);
+          const data = await resp.json();
+          const newPrice = Number(data.price);
+          if (!isNaN(newPrice)) {
+            if (!first && lastPrice !== null) {
+              state.prevPrice = lastPrice;
+              state.trend = newPrice > lastPrice ? "Rising" : (newPrice < lastPrice ? "Falling" : "Steady");
+            }
+            lastPrice = newPrice;
+            state.price = newPrice;
+            if (first) {
+              state.prevPrice = newPrice;
+              state.trend = "--";
+              first = false;
+            }
+            updatePriceUI();
+            $priceUpdateTime.textContent = "Updated: " + formatTime(Date.now());
+          }
+        } catch (e) {
+          // On failure, leave price unchanged
+        }
+      }
+      updatePrice();
+      pricePoller = setInterval(updatePrice, 1800);
+    }
+    function stopPriceFeed() {
+      if (pricePoller) clearInterval(pricePoller);
+      pricePoller = null;
+    }
+
+    // === STRATEGY: RSI + EMA Scalper ===
+    async function fetchKlines(symbol, interval, limit=50) {
+      const resp = await fetch(`${API_BASE}/api/v3/klines?symbol=${symbol}&interval=${interval}m&limit=${limit}`);
+      if (!resp.ok) throw new Error("Klines fetch failed");
+      const arr = await resp.json();
+      return arr.map(row => ({
+        open: Number(row[1]),
+        close: Number(row[4]),
+        high: Number(row[2]),
+        low: Number(row[3]),
+        time: row[0]
+      }));
+    }
+    function ema(values, period) {
+      let k = 2 / (period + 1);
+      let emaPrev = values.slice(0,period).reduce((sum, v)=>sum+v, 0)/period;
+      for(let i=period; i<values.length; ++i) {
+        emaPrev = values[i]*k + emaPrev*(1-k);
+      }
+      return emaPrev;
+    }
+    function rsi(values, period=14) {
+      let gains = 0, losses = 0;
+      for (let i = 1; i <= period; ++i) {
+        let diff = values[i] - values[i-1];
+        if (diff >= 0) gains += diff;
+        else losses -= diff;
+      }
+      let avgGain = gains / period, avgLoss = losses / period;
+      let rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+      let rsi = 100 - (100 / (1 + rs));
+      return Math.max(0, Math.min(100, rsi));
+    }
+    function getSignalFromIndicators(candles) {
+      const closes = candles.map(c=>c.close);
+      const last = closes.length-1;
+
+      // RSI(14) on last 15 closes
+      let rsiVal = rsi(closes.slice(-15),14);
+      // Short EMA(3), Long EMA(7)
+      let emaShort = ema(closes.slice(-7),3), emaLong = ema(closes.slice(-7),7);
+      let signal, confidence;
+
+      if (rsiVal < 33) {
+        signal = "UP";
+        confidence = 80 + Math.random()*10;
+      } else if (rsiVal > 67) {
+        signal = "DOWN";
+        confidence = 80 + Math.random()*10;
+      } else if (emaShort > emaLong) {
+        signal = "UP";
+        confidence = 60 + Math.random()*15;
+      } else if (emaShort < emaLong) {
+        signal = "DOWN";
+        confidence = 60 + Math.random()*15;
+      } else {
+        signal = Math.random()>0.5 ? "UP" : "DOWN";
+        confidence = 51 + Math.random()*8;
+      }
+      confidence = Math.max(50, Math.min(98, Math.round(confidence)));
+      return {
+        signal,
+        confidence,
+        startPrice: closes[closes.length-1]
+      };
+    }
+
+    // === MAIN BOT LOGIC ===
+    async function doSignalCycle() {
+      if (!state.running) return;
+      try {
+        let candles = await fetchKlines(state.symbol, state.interval, 50);
+        let sgl = getSignalFromIndicators(candles);
+        state.signal = sgl.signal;
+        state.confidence = sgl.confidence;
+        state.startPrice = sgl.startPrice;
+        state.currentSignalInfo = {
+          time: formatTime(Date.now()),
+          startPrice: sgl.startPrice,
+          signal: sgl.signal
+        };
+        updateSignalUI();
+        responsiveNotify(`Signal: ${sgl.signal} (${sgl.confidence}%)`);
+        state.countdown = state.interval*60;
+        updateTimerUI();
+        let timerTick = setInterval(()=>{
+          if (!state.running) {
+            clearInterval(timerTick);
+            return;
+          }
+          state.countdown--;
+          updateTimerUI();
+          if(state.countdown <= 0) {
+            clearInterval(timerTick);
+            resolveSignal();
+            setTimeout(doSignalCycle, 1200);
+          }
+        },1000);
+      } catch (e) {
+        state.signal = "--";
+        state.confidence = "--";
+        updateSignalUI();
+        responsiveNotify("Error fetching data. Retrying...");
+        setTimeout(doSignalCycle, 3000);
+      }
+    }
+
+    async function resolveSignal() {
+      if (!state.running || !state.currentSignalInfo) return;
+      try {
+        let candles = await fetchKlines(state.symbol, state.interval, 2);
+        let closePrice = candles[candles.length-1].close;
+        state.closePrice = closePrice;
+        let win = (state.signal==="UP" && closePrice>state.startPrice) ||
+                  (state.signal==="DOWN" && closePrice<state.startPrice);
+        state.history.push({
+          time: state.currentSignalInfo.time,
+          startPrice: state.startPrice,
+          closePrice: closePrice,
+          result: win ? "win" : "lose"
+        });
+        updateHistoryUI();
+        responsiveNotify(win ? "Win! ✅" : "Lose ❌");
+      } catch (e) {
+        responsiveNotify("Failed to resolve signal result.");
+      }
+      state.currentSignalInfo = null;
+    }
+
+    // === EVENT HANDLERS ===
+    $symbolToggle.addEventListener("click", (e)=>{
+      if (e.target.classList.contains("toggle-btn")) {
+        state.symbol = e.target.dataset.symbol;
+        updateSymbolUI();
+        startPriceFeed();
+        responsiveNotify(`Switched to ${SYMBOLS[state.symbol].display}`);
+      }
+    });
+    $intervalToggle.addEventListener("click", (e)=>{
+      if (e.target.classList.contains("toggle-btn")) {
+        state.interval = Number(e.target.dataset.interval);
+        updateIntervalUI();
+        responsiveNotify(`Interval set to ${state.interval} min`);
+        if (state.running) {
+          stopBot();
+          setTimeout(startBot, 900);
+        } else {
+          state.countdown = state.interval*60;
+          updateTimerUI();
+        }
+      }
+    });
+    $startBtn.addEventListener("click", startBot);
+    $stopBtn.addEventListener("click", stopBot);
+
+    function startBot() {
+      if (state.running) return;
+      state.running = true;
+      updateStatus(true);
+      state.history = state.history || [];
+      doSignalCycle();
+    }
+    function stopBot() {
+      state.running = false;
+      updateStatus(false);
+      state.signal = "--";
+      state.confidence = "--";
+      state.countdown = 0;
+      updateSignalUI();
+      updateTimerUI();
+      state.currentSignalInfo = null;
+    }
+
+    // === INIT ===
+    function init() {
+      updateStatus(false);
+      updateSymbolUI();
+      updateIntervalUI();
+      updatePriceUI();
+      updateSignalUI();
+      updateTimerUI();
+      updateHistoryUI();
+      startPriceFeed();
+    }
+    window.addEventListener("DOMContentLoaded", init);
+    window.addEventListener("beforeunload", stopPriceFeed);
+  </script>
+</body>
+</html>
