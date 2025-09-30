@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Enter Bot</title>
+  <style>
+    body {
+      font-family: 'Montserrat', Arial, sans-serif;
+      margin-top: 80px;
+      text-align: center;
+      background: #161b22;
+      color: #e6edf3;
+    }
+    .container {
+      max-width: 400px;
+      margin: auto;
+      padding: 40px;
+      border: 1px solid #21262d;
+      border-radius: 12px;
+      background: #21262d;
+    }
+    input[type="text"] {
+      padding: 10px;
+      width: 80%;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      border: 1px solid #0074D9;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus {
+      border-color: #FFD700;
+    }
+    .enter-btn {
+      padding: 12px 36px;
+      font-size: 18px;
+      color: #fff;
+      background: linear-gradient(90deg, #0074D9 0%, #FFD700 100%);
+      border: none;
+      border-radius: 24px;
+      font-weight: 700;
+      box-shadow: 0 4px 16px #0074d94d;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+    }
+    .enter-btn:hover {
+      background: linear-gradient(90deg, #FFD700 0%, #0074D9 100%);
+      color: #21262d;
+      box-shadow: 0 4px 32px #FFD70099;
+    }
+    .error {
+      color: #ff5b6b;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Enter Bot</h2>
+    <input type="text" id="codeInput" placeholder="Enter your access code" />
+    <br>
+    <button class="enter-btn" onclick="enterBot()">Enter bot</button>
+    <div id="errorMsg" class="error"></div>
+  </div>
+  <script src="enterbot.js"></script>
+</body>
+</html>
