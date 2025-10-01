@@ -636,7 +636,7 @@ if (!sessionStorage.getItem('botCode')) {
           result: win ? "win" : "lose"
         });
         updateHistoryUI();
-        responsiveNotify(win ? "Win! ✅" : "Lose ❌");
+        responsiveNotify(win ? "Win! ✅" : "Lose ❎");
       } catch (e) {
         responsiveNotify("Failed to resolve signal result.");
       }
