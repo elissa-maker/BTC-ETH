@@ -449,7 +449,7 @@ if (!sessionStorage.getItem('botCode')) {
           <td>${formatPrice(row.startPrice, state.symbol)}</td>
           <td>${formatPrice(row.closePrice, state.symbol)}</td>
           <td class="${row.result === 'win' ? 'result-win':'result-lose'}">
-            ${row.result === 'win' ? '✅' : '❌'}
+            ${row.result === 'win' ? '✅' : '❎'}
           </td>
         `;
         $historyBody.appendChild(tr);
